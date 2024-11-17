@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
 import Dropzone from "react-dropzone";
 import { Cloud, File, Loader2 } from "lucide-react";
-import { Progress } from "./ui/progress";
+import Progress from "./Progress";
 import { useUploadThing } from "@/lib/uploadthing";
 import { useToast } from "@/hooks/use-toast";
 import { trpc } from "@/app/_trpc/client";
@@ -31,10 +31,9 @@ const UploadDropzone = () => {
       setUploadProgress((prevProgress) => {
         if (prevProgress >= 95) {
           clearInterval(interval);
-          return 100;
-        } else {
-          return prevProgress + 5;
+          return prevProgress;
         }
+        return prevProgress + 5;
       });
     }, 500);
 
@@ -45,8 +44,6 @@ const UploadDropzone = () => {
     <Dropzone
       multiple={false}
       onDrop={async (acceptedFile) => {
-        console.log(acceptedFile, "file");
-
         setIsUploading(true);
         const progressInterval = startSimulatedProgress();
         const res = await startUpload(acceptedFile);
@@ -75,6 +72,7 @@ const UploadDropzone = () => {
         <div
           {...getRootProps()}
           className=" border h-64 m-4 border-dashed border-gray-300 rounded-lg"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-center h-full w-full">
             <label
@@ -102,13 +100,7 @@ const UploadDropzone = () => {
 
               {isUploading ? (
                 <div className="w-full mt-4 max-w-xs mx-auto">
-                  {/* <Progress
-                    indicatorColor={
-                      uploadProgress === 100 ? "bg-green-500" : ""
-                    }
-                    value={uploadProgress}
-                    className="h-1 w-full bg-zinc-200"
-                  /> */}
+                  <Progress value={uploadProgress} />
                   {uploadProgress === 100 ? (
                     <div className="flex gap-1 items-center justify-center text-sm text-zinc-700 text-center pt-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
@@ -145,6 +137,7 @@ const UploadButton = () => {
       <DialogTrigger onClick={() => setIsOpen(true)} asChild>
         <Button>Upload PDF</Button>
       </DialogTrigger>
+
       <DialogContent>
         <UploadDropzone />
       </DialogContent>
